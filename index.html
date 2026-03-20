@@ -3,28 +3,45 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Yuzenya — Annual Health Check</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<title>The Annual Health Check — Your bloodwork, decoded.</title>
+<meta name="description" content="Upload your bloodwork. Get a personalized, AI-powered health protocol in minutes. No account needed.">
+<meta property="og:title" content="The Annual Health Check">
+<meta property="og:description" content="Your bloodwork, decoded. AI-powered health analysis with actionable protocols.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The Annual Health Check">
+<meta name="twitter:description" content="Your bloodwork, decoded. AI-powered health analysis with actionable protocols.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
   --bg: #FAFAF8;
-  --text: #1A1A1A;
+  --bg-card: #FFFFFF;
+  --text: #1C1917;
+  --text-secondary: #57534E;
+  --muted: #A8A29E;
   --accent: #C96442;
   --accent-hover: #B55636;
-  --muted: #8A8A82;
-  --border: #E0DED8;
-  --green: #2D8A4E;
+  --accent-light: rgba(201,100,66,0.08);
+  --border: #E7E5E4;
+  --border-light: #F5F5F4;
+  --green: #4A7C59;
+  --green-bg: rgba(74,124,89,0.08);
   --amber: #C4841D;
-  --red: #C53030;
+  --amber-bg: rgba(196,132,29,0.08);
+  --red: #9B2C2C;
+  --red-bg: rgba(155,44,44,0.08);
   --serif: 'Playfair Display', Georgia, serif;
   --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.08);
+  --radius: 12px;
+  --radius-sm: 8px;
 }
 
 body {
@@ -34,177 +51,498 @@ body {
   font-size: 16px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-#root { min-height: 100vh; }
+#app { min-height: 100vh; }
 
+/* ---- Animations ---- */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes scoreReveal {
+  from { stroke-dashoffset: 283; }
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.fade-up { animation: fadeUp 0.5s ease-out both; }
+.fade-in { animation: fadeIn 0.4s ease-out both; }
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+.stagger-5 { animation-delay: 0.5s; }
+
+/* ---- Layout ---- */
 .container {
   max-width: 720px;
   margin: 0 auto;
-  padding: 40px 24px 80px;
+  padding: 0 24px;
 }
 
-/* API Key Bar */
-.api-bar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  background: var(--bg);
-  border-bottom: 1px solid var(--border);
-  z-index: 100;
-  padding: 8px 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-.api-bar label {
-  font-size: 12px;
-  color: var(--muted);
-  font-weight: 500;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-}
-.api-bar input {
-  font-family: var(--sans);
-  font-size: 13px;
-  padding: 6px 12px;
-  border: 1px solid var(--border);
-  border-radius: 2px;
-  background: white;
-  width: 320px;
-  max-width: 50vw;
-  outline: none;
-  transition: border-color 0.2s;
-}
-.api-bar input:focus { border-color: var(--accent); }
-.api-bar input::placeholder { color: #C0BEB8; }
-
-/* Progress */
-.progress {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0;
-  margin: 60px 0 48px;
-}
-.progress-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--border);
-  transition: background 0.3s;
-  flex-shrink: 0;
-}
-.progress-dot.active { background: var(--accent); }
-.progress-dot.completed { background: var(--accent); opacity: 0.5; }
-.progress-line {
-  width: 60px;
-  height: 1px;
-  background: var(--border);
-}
-
-/* Typography */
-h1 {
-  font-family: var(--serif);
-  font-size: 32px;
-  font-weight: 600;
-  margin-bottom: 12px;
-  letter-spacing: -0.5px;
-}
-h2 {
-  font-family: var(--serif);
-  font-size: 22px;
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-p.subtitle {
-  color: var(--muted);
-  font-size: 15px;
-  margin-bottom: 36px;
-}
-
-/* Upload Zone */
-.upload-zone {
-  border: 2px dashed var(--border);
-  padding: 48px 24px;
-  text-align: center;
-  cursor: pointer;
-  transition: border-color 0.2s, background 0.2s;
-  margin-bottom: 24px;
-}
-.upload-zone:hover, .upload-zone.drag-over {
-  border-color: var(--accent);
-  background: rgba(201,100,66,0.03);
-}
-.upload-zone p { color: var(--muted); font-size: 15px; }
-.upload-zone .browse { color: var(--accent); text-decoration: underline; cursor: pointer; }
-.upload-zone input { display: none; }
-
-.file-preview {
+/* ---- Nav ---- */
+.nav {
+  padding: 20px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 0;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 24px;
+  max-width: 720px;
+  margin: 0 auto;
 }
-.file-preview .file-info {
+.nav-brand {
+  font-family: var(--serif);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.3px;
+}
+.nav-settings {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
   display: flex;
-  flex-direction: column;
-}
-.file-preview .file-name { font-weight: 500; font-size: 15px; }
-.file-preview .file-size { font-size: 13px; color: var(--muted); }
-.file-preview button {
-  background: none;
-  border: none;
-  color: var(--muted);
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  font-size: 13px;
-  text-decoration: underline;
+  transition: all 0.2s;
+  font-size: 16px;
+  color: var(--muted);
+  position: relative;
 }
-.file-preview button:hover { color: var(--text); }
+.nav-settings:hover { border-color: var(--accent); color: var(--accent); }
+.nav-settings.has-key { border-color: var(--green); color: var(--green); }
 
-/* Buttons */
+/* Settings Panel */
+.settings-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.3);
+  z-index: 200;
+  animation: fadeIn 0.2s ease-out;
+  backdrop-filter: blur(2px);
+}
+.settings-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 360px;
+  max-width: 90vw;
+  background: var(--bg-card);
+  z-index: 201;
+  padding: 32px 24px;
+  box-shadow: var(--shadow-lg);
+  animation: slideIn 0.25s ease-out;
+  overflow-y: auto;
+}
+.settings-panel h3 {
+  font-family: var(--serif);
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+.settings-panel p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+.settings-panel label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.settings-panel input[type="password"] {
+  width: 100%;
+  padding: 12px 14px;
+  font-family: var(--sans);
+  font-size: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.settings-panel input[type="password"]:focus { border-color: var(--accent); }
+.settings-close {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+.settings-close:hover { background: var(--border-light); color: var(--text); }
+.key-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 13px;
+}
+.key-status.valid { color: var(--green); }
+.key-status.empty { color: var(--muted); }
+
+/* ---- Hero ---- */
+.hero {
+  text-align: center;
+  padding: 80px 24px 60px;
+  max-width: 640px;
+  margin: 0 auto;
+}
+.hero-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2.5px;
+  color: var(--accent);
+  margin-bottom: 24px;
+  padding: 6px 16px;
+  border: 1px solid rgba(201,100,66,0.2);
+  border-radius: 100px;
+  background: var(--accent-light);
+}
+.hero h1 {
+  font-family: var(--serif);
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -1px;
+  margin-bottom: 20px;
+  color: var(--text);
+}
+.hero h1 em {
+  font-style: italic;
+  color: var(--accent);
+}
+.hero p {
+  font-size: 18px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  max-width: 480px;
+  margin: 0 auto 40px;
+}
+.hero-buttons {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ---- Preview Cards (Hero) ---- */
+.preview-section {
+  padding: 0 24px 80px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+.preview-heading {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--muted);
+  margin-bottom: 32px;
+}
+.preview-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.preview-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+}
+.preview-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  margin-bottom: 14px;
+}
+.preview-card h4 {
+  font-family: var(--serif);
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.preview-card p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* ---- Buttons ---- */
 .btn {
   font-family: var(--sans);
   font-size: 15px;
   font-weight: 500;
-  padding: 14px 32px;
+  padding: 14px 28px;
   border: none;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: background 0.2s, opacity 0.2s;
-  display: inline-block;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
 }
 .btn-primary {
   background: var(--accent);
   color: white;
+  box-shadow: 0 2px 8px rgba(201,100,66,0.25);
 }
-.btn-primary:hover { background: var(--accent-hover); }
+.btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(201,100,66,0.3); }
+.btn-primary:active { transform: translateY(0); }
 .btn-primary:disabled {
   background: var(--border);
   color: var(--muted);
   cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
 }
 .btn-secondary {
+  background: var(--bg-card);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover { border-color: var(--text); }
+.btn-ghost {
   background: none;
-  color: var(--muted);
+  color: var(--text-secondary);
   padding: 14px 16px;
 }
-.btn-secondary:hover { color: var(--text); }
+.btn-ghost:hover { color: var(--text); }
+.btn-sm { font-size: 13px; padding: 10px 18px; }
 .btn-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 36px;
+  margin-top: 40px;
 }
 
-/* Form Elements */
-.form-group {
+/* ---- Progress Steps ---- */
+.steps-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 32px 0 40px;
+}
+.step-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.step-number {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  border: 2px solid var(--border);
+  color: var(--muted);
+  transition: all 0.3s;
+  flex-shrink: 0;
+}
+.step-number.active { border-color: var(--accent); background: var(--accent); color: white; }
+.step-number.done { border-color: var(--green); background: var(--green); color: white; }
+.step-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  transition: color 0.3s;
+  display: none;
+}
+.step-item.active .step-label { color: var(--text); display: block; }
+.step-connector {
+  width: 48px;
+  height: 2px;
+  background: var(--border);
+  margin: 0 8px;
+  border-radius: 1px;
+  transition: background 0.3s;
+}
+.step-connector.done { background: var(--green); }
+
+/* ---- Section Heading ---- */
+.section-header {
   margin-bottom: 32px;
 }
+.section-header h2 {
+  font-family: var(--serif);
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+  margin-bottom: 8px;
+}
+.section-header p {
+  color: var(--text-secondary);
+  font-size: 15px;
+}
+
+/* ---- Upload ---- */
+.upload-zone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 56px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s;
+  background: var(--bg-card);
+}
+.upload-zone:hover, .upload-zone.drag-over {
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+.upload-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background: var(--accent-light);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin: 0 auto 16px;
+}
+.upload-zone h3 {
+  font-family: var(--serif);
+  font-size: 18px;
+  margin-bottom: 6px;
+}
+.upload-zone p { color: var(--text-secondary); font-size: 14px; }
+.upload-zone .browse { color: var(--accent); text-decoration: underline; cursor: pointer; font-weight: 500; }
+.upload-formats {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 16px;
+}
+.upload-format-tag {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  background: var(--border-light);
+  padding: 4px 10px;
+  border-radius: 4px;
+}
+
+.file-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+}
+.file-card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--accent-light);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.file-card-info { flex: 1; }
+.file-card-name { font-weight: 600; font-size: 15px; }
+.file-card-size { font-size: 13px; color: var(--muted); margin-top: 2px; }
+.file-card-remove {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s;
+}
+.file-card-remove:hover { background: var(--red-bg); color: var(--red); }
+
+/* ---- Questionnaire ---- */
+.q-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 32px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 20px;
+}
+.q-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.q-card-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+.q-card-title {
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 600;
+}
+.form-group {
+  margin-bottom: 24px;
+}
+.form-group:last-child { margin-bottom: 0; }
 .form-group label {
   display: block;
   font-size: 14px;
@@ -212,11 +550,10 @@ p.subtitle {
   margin-bottom: 10px;
   color: var(--text);
 }
-.form-group .label-detail {
-  font-weight: 300;
+.form-group .label-hint {
+  font-weight: 400;
   color: var(--muted);
   font-size: 13px;
-  margin-left: 4px;
 }
 
 /* Slider */
@@ -229,32 +566,35 @@ p.subtitle {
   -webkit-appearance: none;
   appearance: none;
   flex: 1;
-  height: 2px;
+  height: 4px;
   background: var(--border);
   outline: none;
+  border-radius: 2px;
 }
 .slider-wrap input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background: var(--accent);
   cursor: pointer;
+  box-shadow: 0 2px 6px rgba(201,100,66,0.3);
 }
 .slider-wrap input[type="range"]::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background: var(--accent);
   cursor: pointer;
   border: none;
 }
 .slider-value {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 600;
-  min-width: 32px;
+  min-width: 36px;
   text-align: center;
   font-family: var(--serif);
+  color: var(--accent);
 }
 
 /* Option Pills */
@@ -264,160 +604,581 @@ p.subtitle {
   gap: 8px;
 }
 .option-pill {
-  padding: 8px 18px;
+  padding: 9px 18px;
   font-size: 14px;
   font-family: var(--sans);
   border: 1px solid var(--border);
-  background: white;
+  background: var(--bg-card);
   cursor: pointer;
   transition: all 0.15s;
-  border-radius: 2px;
+  border-radius: 100px;
+  font-weight: 500;
+  color: var(--text-secondary);
 }
-.option-pill:hover { border-color: var(--accent); }
+.option-pill:hover { border-color: var(--accent); color: var(--accent); }
 .option-pill.selected {
   background: var(--accent);
   color: white;
   border-color: var(--accent);
 }
 
-/* Text Inputs */
-input[type="number"], input[type="text"], textarea {
+/* Text inputs */
+.text-input, .textarea-input {
   font-family: var(--sans);
   font-size: 15px;
   width: 100%;
-  padding: 10px 0;
-  border: none;
-  border-bottom: 1px solid var(--border);
-  background: transparent;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
   outline: none;
   transition: border-color 0.2s;
   color: var(--text);
 }
-input[type="number"]:focus, input[type="text"]:focus, textarea:focus {
-  border-bottom-color: var(--accent);
-}
-textarea {
+.text-input:focus, .textarea-input:focus { border-color: var(--accent); }
+.textarea-input {
   resize: vertical;
   min-height: 80px;
   line-height: 1.6;
 }
-input::placeholder, textarea::placeholder { color: #C0BEB8; }
+.text-input::placeholder, .textarea-input::placeholder { color: var(--muted); }
 
-/* Loading */
+/* Q progress */
+.q-progress {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 24px;
+}
+.q-progress-seg {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--border);
+  transition: background 0.3s;
+}
+.q-progress-seg.filled { background: var(--accent); }
+
+/* ---- Loading ---- */
 .loading-wrap {
   text-align: center;
-  padding: 80px 0;
+  padding: 100px 24px;
 }
-.loading-wrap p {
-  font-family: var(--serif);
-  font-size: 20px;
-  color: var(--text);
+.loading-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 32px;
+  position: relative;
 }
-@keyframes pulse {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 1; }
+.loading-ring {
+  width: 64px;
+  height: 64px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spinSlow 1.2s linear infinite;
 }
-.loading-dots {
-  display: inline-flex;
-  gap: 6px;
-  margin-top: 24px;
+.loading-steps {
+  list-style: none;
+  max-width: 280px;
+  margin: 0 auto;
+  text-align: left;
 }
-.loading-dots span {
+.loading-step {
+  padding: 10px 0;
+  font-size: 15px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: color 0.3s;
+}
+.loading-step.active { color: var(--text); }
+.loading-step.done { color: var(--green); }
+.loading-step-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--accent);
-  animation: pulse 1.4s ease-in-out infinite;
+  background: var(--border);
+  flex-shrink: 0;
+  transition: all 0.3s;
 }
-.loading-dots span:nth-child(2) { animation-delay: 0.2s; }
-.loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+.loading-step.active .loading-step-dot { background: var(--accent); animation: pulse 1.4s ease-in-out infinite; }
+.loading-step.done .loading-step-dot { background: var(--green); }
 
-/* Plan Output */
-.plan-output {
-  line-height: 1.7;
+/* ---- Results ---- */
+.results-header {
+  text-align: center;
+  padding: 48px 0 40px;
 }
-.plan-output h1, .plan-output h2, .plan-output h3 {
+.results-header h1 {
   font-family: var(--serif);
-  margin-top: 40px;
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.results-header p {
+  font-size: 15px;
+  color: var(--text-secondary);
+}
+
+/* Health Score */
+.score-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 40px;
+  text-align: center;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-md);
+}
+.score-ring {
+  width: 140px;
+  height: 140px;
+  margin: 0 auto 20px;
+  position: relative;
+}
+.score-ring svg { transform: rotate(-90deg); }
+.score-ring-bg { fill: none; stroke: var(--border); stroke-width: 8; }
+.score-ring-fill { fill: none; stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 1.5s ease-out; }
+.score-number {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.score-number strong {
+  font-family: var(--serif);
+  font-size: 42px;
+  font-weight: 700;
+  line-height: 1;
+}
+.score-number span {
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 4px;
+}
+.score-label {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.score-summary {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* Biomarker Cards */
+.bio-section-title {
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 600;
+  margin: 40px 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.bio-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s;
+}
+.bio-card:hover { box-shadow: var(--shadow-md); }
+.bio-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
   margin-bottom: 12px;
 }
-.plan-output h1 { font-size: 28px; }
-.plan-output h2 { font-size: 22px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
-.plan-output h3 { font-size: 18px; }
-.plan-output p { margin-bottom: 16px; }
-.plan-output ul, .plan-output ol { margin-bottom: 16px; padding-left: 24px; }
-.plan-output li { margin-bottom: 6px; }
-.plan-output strong { font-weight: 600; }
-.plan-output hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
-.plan-output blockquote {
-  border-left: 3px solid var(--accent);
-  padding-left: 16px;
+.bio-name {
+  font-weight: 600;
+  font-size: 15px;
+}
+.bio-value {
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 600;
+  text-align: right;
+}
+.bio-unit {
+  font-size: 12px;
   color: var(--muted);
-  margin: 16px 0;
-  font-style: italic;
+  font-family: var(--sans);
+  font-weight: 400;
+  margin-left: 3px;
+}
+.bio-bar-wrap {
+  height: 6px;
+  background: var(--border-light);
+  border-radius: 3px;
+  margin-bottom: 10px;
+  position: relative;
+  overflow: hidden;
+}
+.bio-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.8s ease-out;
+}
+.bio-bar-marker {
+  position: absolute;
+  top: -3px;
+  width: 3px;
+  height: 12px;
+  border-radius: 2px;
+  background: var(--text);
+  transition: left 0.8s ease-out;
+}
+.bio-interp {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+.bio-range {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.status-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  margin-bottom: 4px;
+}
+.status-optimal { background: var(--green-bg); color: var(--green); }
+.status-borderline { background: var(--amber-bg); color: var(--amber); }
+.status-concerning { background: var(--red-bg); color: var(--red); }
+
+/* Priority Cards */
+.priority-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 12px;
+  display: flex;
+  gap: 18px;
+  box-shadow: var(--shadow-sm);
+}
+.priority-num {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--accent-light);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.priority-content h4 {
+  font-family: var(--serif);
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.priority-content p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+.priority-impact {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-top: 8px;
+}
+.impact-high { background: var(--red-bg); color: var(--red); }
+.impact-medium { background: var(--amber-bg); color: var(--amber); }
+.impact-low { background: var(--green-bg); color: var(--green); }
+
+/* Protocol Tabs */
+.protocol-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 24px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.protocol-tab {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  border-radius: 100px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  color: var(--text-secondary);
+}
+.protocol-tab:hover { border-color: var(--accent); color: var(--accent); }
+.protocol-tab.active { background: var(--accent); color: white; border-color: var(--accent); }
+.protocol-list {
+  list-style: none;
+}
+.protocol-item {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border-light);
+  font-size: 15px;
+  line-height: 1.5;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.protocol-item:last-child { border-bottom: none; }
+.protocol-bullet {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+  margin-top: 8px;
 }
 
-/* Color-coded markers */
-.plan-output .optimal, .plan-output [data-status="optimal"] { color: var(--green); font-weight: 600; }
-.plan-output .borderline, .plan-output [data-status="borderline"] { color: var(--amber); font-weight: 600; }
-.plan-output .concerning, .plan-output [data-status="concerning"] { color: var(--red); font-weight: 600; }
+/* Retest Timeline */
+.retest-card {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+.retest-card:last-child { border-bottom: none; }
+.retest-when {
+  min-width: 80px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  padding-top: 2px;
+}
+.retest-info h4 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.retest-info p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
 
-/* Action bar */
+/* Risk Flags */
+.risk-card {
+  background: var(--red-bg);
+  border: 1px solid rgba(155,44,44,0.15);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 12px;
+  display: flex;
+  gap: 14px;
+}
+.risk-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.risk-content p {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+/* Disclaimer */
+.disclaimer {
+  margin-top: 40px;
+  padding: 20px 24px;
+  background: var(--border-light);
+  border-radius: var(--radius);
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* Actions bar */
 .action-bar {
   display: flex;
   gap: 12px;
   margin-top: 40px;
-  padding-top: 24px;
+  padding-top: 32px;
   border-top: 1px solid var(--border);
   flex-wrap: wrap;
-}
-.action-bar .btn {
-  font-size: 14px;
-  padding: 10px 20px;
 }
 
 /* Error */
 .error-msg {
-  background: #FFF5F5;
+  background: var(--red-bg);
   color: var(--red);
-  padding: 16px;
+  padding: 16px 20px;
   font-size: 14px;
   margin-bottom: 24px;
-  border-left: 3px solid var(--red);
+  border-radius: var(--radius-sm);
+  border-left: 4px solid var(--red);
+  line-height: 1.5;
 }
 
-/* Print */
+/* Sample badge */
+.sample-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--amber);
+  background: var(--amber-bg);
+  padding: 6px 14px;
+  border-radius: 100px;
+  margin-bottom: 16px;
+}
+
+/* ---- Print ---- */
 @media print {
-  .api-bar, .progress, .action-bar, .btn-row, .btn-secondary { display: none !important; }
+  .nav, .steps-bar, .action-bar, .btn-row, .btn-ghost, .sample-badge { display: none !important; }
   .container { max-width: 100%; padding: 20px; }
-  .plan-output h2 { break-after: avoid; }
-  body { font-size: 12pt; }
+  .bio-section-title { break-after: avoid; }
+  .bio-card, .priority-card { break-inside: avoid; }
+  body { font-size: 11pt; }
+  .score-card { box-shadow: none; border: 1px solid #ddd; }
 }
 
-/* Responsive */
-@media (max-width: 600px) {
-  .container { padding: 32px 16px 60px; }
-  h1 { font-size: 26px; }
-  .api-bar input { width: 200px; }
-  .option-pill { font-size: 13px; padding: 6px 14px; }
-  .upload-zone { padding: 32px 16px; }
+/* ---- Responsive ---- */
+@media (max-width: 640px) {
+  .hero { padding: 48px 20px 40px; }
+  .hero h1 { font-size: 34px; }
+  .hero p { font-size: 16px; }
+  .preview-grid { grid-template-columns: 1fr; }
+  .container { padding: 0 16px; }
+  .q-card { padding: 24px 20px; }
+  .score-card { padding: 28px 20px; }
+  .priority-card { padding: 20px; }
+  .bio-card { padding: 16px 20px; }
+  .settings-panel { width: 100%; max-width: 100%; }
+  .step-label { display: none !important; }
+  .protocol-tabs { gap: 6px; }
+  .hero-buttons { flex-direction: column; align-items: center; }
 }
 </style>
 </head>
 <body>
-<div id="root"></div>
-<script>
-  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-</script>
-<script type="text/babel">
-const { useState, useRef, useEffect, useCallback } = React;
+<div id="app"></div>
 
-// ---------- Helpers ----------
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// ============================================================
+// SAMPLE REPORT DATA
+// ============================================================
+const SAMPLE_REPORT = {
+  healthScore: 72,
+  summary: "Overall, your metabolic and cardiovascular markers are mostly within range, but there are a few areas that need attention. Your Vitamin D is suboptimal, LDL cholesterol is mildly elevated, and fasting glucose is trending toward the upper end of normal. The good news: your liver and kidney panels look solid, iron status is healthy, and your thyroid is functioning well. With targeted changes over the next 90 days, you can meaningfully improve your trajectory.",
+  biomarkers: [
+    { name: "Vitamin D (25-OH)", value: 28, unit: "ng/mL", status: "borderline", optimalRange: "40–80 ng/mL", interpretation: "Below the optimal range. At 28 ng/mL, you're technically 'sufficient' by outdated standards, but functional medicine targets 40–60 ng/mL for immune function, mood, and bone health." },
+    { name: "LDL Cholesterol", value: 148, unit: "mg/dL", status: "borderline", optimalRange: "< 130 mg/dL", interpretation: "Mildly elevated. Not alarming on its own, but worth addressing through diet and exercise before it trends higher. Consider an advanced lipid panel (LDL-P or ApoB) for a clearer risk picture." },
+    { name: "Total Cholesterol", value: 215, unit: "mg/dL", status: "borderline", optimalRange: "< 200 mg/dL", interpretation: "Slightly above the reference range. Your HDL is healthy which helps the ratio, but the LDL component is the main driver here." },
+    { name: "HDL Cholesterol", value: 58, unit: "mg/dL", status: "optimal", optimalRange: "> 50 mg/dL", interpretation: "Good. Solid cardioprotective level. Regular exercise is likely contributing to this — keep it up." },
+    { name: "Triglycerides", value: 95, unit: "mg/dL", status: "optimal", optimalRange: "< 150 mg/dL", interpretation: "Well within range. This suggests good insulin sensitivity and metabolic health." },
+    { name: "Fasting Glucose", value: 98, unit: "mg/dL", status: "borderline", optimalRange: "70–90 mg/dL", interpretation: "Upper end of normal. Not pre-diabetic yet, but trending in a direction that warrants monitoring. Functional optimal is below 90." },
+    { name: "HbA1c", value: 5.4, unit: "%", status: "optimal", optimalRange: "< 5.7%", interpretation: "Normal 3-month blood sugar average. Consistent with the slightly elevated fasting glucose — no red flag, but worth watching." },
+    { name: "TSH", value: 2.1, unit: "mIU/L", status: "optimal", optimalRange: "0.5–3.0 mIU/L", interpretation: "Thyroid function is well-balanced. No action needed." },
+    { name: "Ferritin", value: 85, unit: "ng/mL", status: "optimal", optimalRange: "40–150 ng/mL", interpretation: "Healthy iron stores. No signs of deficiency or overload." },
+    { name: "Hemoglobin", value: 15.2, unit: "g/dL", status: "optimal", optimalRange: "13.5–17.5 g/dL", interpretation: "Normal oxygen-carrying capacity. No concerns." },
+    { name: "ALT", value: 24, unit: "U/L", status: "optimal", optimalRange: "< 35 U/L", interpretation: "Liver enzymes are well within range. Healthy liver function." },
+    { name: "Creatinine", value: 1.0, unit: "mg/dL", status: "optimal", optimalRange: "0.7–1.3 mg/dL", interpretation: "Kidney function is normal." },
+    { name: "Vitamin B12", value: 410, unit: "pg/mL", status: "optimal", optimalRange: "300–900 pg/mL", interpretation: "Healthy B12 levels. No supplementation needed at this time." }
+  ],
+  priorities: [
+    { title: "Optimize Vitamin D to 50+ ng/mL", description: "Your Vitamin D at 28 ng/mL is affecting immune resilience, sleep quality, and mood regulation. Supplementing with 4,000–5,000 IU of Vitamin D3 + K2 daily (taken with a fat-containing meal) should bring you into the optimal range within 8–12 weeks.", impact: "high" },
+    { title: "Lower LDL through targeted nutrition", description: "At 148 mg/dL, your LDL is modestly elevated. Before considering medication, try increasing soluble fiber (oats, beans, psyllium), adding omega-3 fatty fish 3x/week, reducing processed carbs, and increasing plant sterol intake. Retest in 3 months.", impact: "high" },
+    { title: "Stabilize fasting glucose below 90", description: "Your fasting glucose at 98 mg/dL is not yet concerning but is trending. Focus on post-meal walks (10–15 minutes), reducing refined carbs, and considering a CGM for 2 weeks to identify glucose spikes.", impact: "medium" }
+  ],
+  protocol: {
+    sleep: [
+      "Maintain 7+ hours consistently — your current pattern supports this",
+      "Take Vitamin D in the morning (not evening) as it can interfere with melatonin production",
+      "Consider magnesium glycinate (300–400mg) 1 hour before bed for sleep quality and glucose metabolism"
+    ],
+    nutrition: [
+      "Add 2 servings of fatty fish per week (salmon, sardines, mackerel) for omega-3s and LDL management",
+      "Increase soluble fiber to 10–15g/day: oats, chia seeds, beans, psyllium husk",
+      "Add 1 serving of leafy greens daily for magnesium and folate",
+      "Reduce refined carbohydrates — swap white bread/pasta for whole grain or legume-based alternatives",
+      "Include a 10–15 minute walk after your largest meal to blunt glucose spikes"
+    ],
+    movement: [
+      "Your current 3x/week mixed training is a good foundation — maintain this",
+      "Add 2 sessions of zone 2 cardio (30–45 min, conversational pace) for metabolic health and LDL improvement",
+      "Consider adding 10-minute post-meal walks on non-training days"
+    ],
+    supplements: [
+      "Vitamin D3 + K2: 4,000–5,000 IU daily with a fat-containing meal",
+      "Magnesium Glycinate: 300–400mg before bed",
+      "Omega-3 (EPA/DHA): 2g total daily if not eating fatty fish regularly",
+      "Consider Berberine 500mg or Citrus Bergamot if LDL hasn't improved in 3 months"
+    ]
+  },
+  retestSchedule: [
+    { biomarker: "Vitamin D (25-OH)", when: "3 months", reason: "Verify supplementation has brought levels into the 40–60 ng/mL range" },
+    { biomarker: "Lipid Panel (LDL, HDL, Triglycerides)", when: "3 months", reason: "Assess whether dietary changes have moved LDL below 130 mg/dL" },
+    { biomarker: "Fasting Glucose + HbA1c", when: "6 months", reason: "Monitor glucose trend — should stabilize below 95 with protocol adherence" },
+    { biomarker: "ApoB / LDL-P (advanced lipid)", when: "6 months", reason: "If LDL hasn't improved, this gives a much clearer cardiovascular risk picture than standard LDL-C" }
+  ],
+  riskFlags: [
+    "LDL trending upward — if lifestyle changes don't lower it within 3–6 months, discuss statin or advanced lipid testing with your physician",
+    "Fasting glucose at upper normal boundary — monitor for progression toward pre-diabetes, especially with family history of type 2 diabetes"
+  ],
+  disclaimer: "This analysis is for informational and educational purposes only. It does not constitute medical advice, diagnosis, or treatment. Always consult a qualified healthcare provider before making changes to your health regimen, supplements, or medications. AI-generated health insights should complement — never replace — professional medical guidance."
+};
+
+
+// ============================================================
+// HELPERS
+// ============================================================
+function $(sel, ctx) { return (ctx || document).querySelector(sel); }
+function $$(sel, ctx) { return Array.from((ctx || document).querySelectorAll(sel)); }
+function el(tag, attrs, ...children) {
+  const e = document.createElement(tag);
+  if (attrs) Object.entries(attrs).forEach(([k, v]) => {
+    if (k === 'className') e.className = v;
+    else if (k === 'style' && typeof v === 'object') Object.assign(e.style, v);
+    else if (k.startsWith('on') && typeof v === 'function') e.addEventListener(k.slice(2).toLowerCase(), v);
+    else if (k === 'innerHTML') e.innerHTML = v;
+    else e.setAttribute(k, v);
+  });
+  children.flat(Infinity).forEach(c => {
+    if (c == null || c === false) return;
+    e.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+  });
+  return e;
+}
 
 function formatFileSize(bytes) {
   if (bytes < 1024) return bytes + ' B';
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / 1048576).toFixed(1) + ' MB';
 }
 
 async function fileToBase64(file) {
@@ -432,100 +1193,121 @@ async function fileToBase64(file) {
 async function pdfToBase64Image(file) {
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-  // Render up to first 3 pages
   const pages = Math.min(pdf.numPages, 3);
   const canvases = [];
-
   for (let i = 1; i <= pages; i++) {
     const page = await pdf.getPage(i);
-    const scale = 2;
-    const viewport = page.getViewport({ scale });
+    const viewport = page.getViewport({ scale: 2 });
     const canvas = document.createElement('canvas');
     canvas.width = viewport.width;
     canvas.height = viewport.height;
-    const ctx = canvas.getContext('2d');
-    await page.render({ canvasContext: ctx, viewport }).promise;
+    await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
     canvases.push(canvas);
   }
-
-  // Stitch canvases vertically
-  const totalHeight = canvases.reduce((sum, c) => sum + c.height, 0);
-  const maxWidth = Math.max(...canvases.map(c => c.width));
+  const totalH = canvases.reduce((s, c) => s + c.height, 0);
+  const maxW = Math.max(...canvases.map(c => c.width));
   const stitched = document.createElement('canvas');
-  stitched.width = maxWidth;
-  stitched.height = totalHeight;
+  stitched.width = maxW;
+  stitched.height = totalH;
   const ctx = stitched.getContext('2d');
   let y = 0;
-  for (const c of canvases) {
-    ctx.drawImage(c, 0, y);
-    y += c.height;
-  }
-
+  for (const c of canvases) { ctx.drawImage(c, 0, y); y += c.height; }
   return stitched.toDataURL('image/png').split(',')[1];
 }
 
 function getMediaType(file) {
-  if (file.type === 'application/pdf') return 'image/png'; // we convert PDF to PNG
-  if (file.type === 'image/png') return 'image/png';
-  if (file.type === 'image/jpeg' || file.type === 'image/jpg') return 'image/jpeg';
-  return 'image/png';
+  if (file.type === 'application/pdf') return 'image/png';
+  if (file.type.includes('png')) return 'image/png';
+  return 'image/jpeg';
 }
 
-function colorCodePlan(html) {
-  // Color-code markers: ✅ optimal, ⚠️ borderline, 🔴 concerning
-  html = html.replace(/✅\s*([\w\s\/\(\)\-\.:]+)/g, '<span class="optimal">✅ $1</span>');
-  html = html.replace(/⚠️\s*([\w\s\/\(\)\-\.:]+)/g, '<span class="borderline">⚠️ $1</span>');
-  html = html.replace(/🔴\s*([\w\s\/\(\)\-\.:]+)/g, '<span class="concerning">🔴 $1</span>');
-  // Also catch [OPTIMAL], [BORDERLINE], [CONCERNING] tags
-  html = html.replace(/\[OPTIMAL\]/gi, '<span class="optimal">[OPTIMAL]</span>');
-  html = html.replace(/\[BORDERLINE\]/gi, '<span class="borderline">[BORDERLINE]</span>');
-  html = html.replace(/\[CONCERNING\]/gi, '<span class="concerning">[CONCERNING]</span>');
-  return html;
+function scoreColor(score) {
+  if (score >= 80) return 'var(--green)';
+  if (score >= 60) return 'var(--amber)';
+  return 'var(--red)';
 }
 
-async function callClaude(apiKey, base64Image, mediaType, questionnaire) {
-  const systemPrompt = `You are a preventive health analyst. Analyze the provided bloodwork results and behavioral data. Be specific, prioritized, and actionable. Never be vague. Structure your response with clear sections. Include one brief medical disclaimer at the end.
+function statusClass(status) {
+  if (status === 'optimal') return 'status-optimal';
+  if (status === 'borderline') return 'status-borderline';
+  return 'status-concerning';
+}
 
-Format your response in markdown with these exact sections:
-# Your Biomarker Summary
-For each key biomarker, list the value and mark status using these exact markers:
-- ✅ for optimal values
-- ⚠️ for borderline values  
-- 🔴 for concerning values
+function impactClass(impact) {
+  if (impact === 'high') return 'impact-high';
+  if (impact === 'medium') return 'impact-medium';
+  return 'impact-low';
+}
 
-# Top 3 Priorities
-The highest-leverage changes based on combined bloodwork + behavioral data.
 
-# 90-Day Protocol
-Specific actionable steps organized by category:
-## Sleep
-## Nutrition  
-## Movement
-## Supplementation
+// ============================================================
+// API CALL
+// ============================================================
+async function callClaude(apiKey, base64Image, mediaType, answers) {
+  const systemPrompt = `You are a preventive health analyst. Analyze the provided bloodwork results and behavioral data.
 
-# What to Retest in 6 Months
-Which markers to track and why.
+CRITICAL: You MUST respond with ONLY valid JSON — no markdown, no code fences, no explanation text outside the JSON. 
 
-# Your Risk Flags
-Anything warranting a doctor conversation.
+Return this exact JSON structure:
+{
+  "healthScore": <number 0-100>,
+  "summary": "<overall assessment paragraph>",
+  "biomarkers": [
+    {
+      "name": "<biomarker name>",
+      "value": <number>,
+      "unit": "<unit string>",
+      "status": "<optimal|borderline|concerning>",
+      "optimalRange": "<range string>",
+      "interpretation": "<1-2 sentence interpretation>"
+    }
+  ],
+  "priorities": [
+    {
+      "title": "<action title>",
+      "description": "<detailed recommendation>",
+      "impact": "<high|medium|low>"
+    }
+  ],
+  "protocol": {
+    "sleep": ["<recommendation>"],
+    "nutrition": ["<recommendation>"],
+    "movement": ["<recommendation>"],
+    "supplements": ["<recommendation>"]
+  },
+  "retestSchedule": [
+    {
+      "biomarker": "<name>",
+      "when": "<timeframe>",
+      "reason": "<why retest>"
+    }
+  ],
+  "riskFlags": ["<risk description>"],
+  "disclaimer": "This analysis is for informational and educational purposes only. It does not constitute medical advice, diagnosis, or treatment. Always consult a qualified healthcare provider before making changes to your health regimen."
+}
 
----
-*Medical Disclaimer*`;
+Rules:
+- Include ALL biomarkers visible in the lab results
+- Be specific, actionable, and evidence-based
+- Health score: 90-100 excellent, 75-89 good, 60-74 needs attention, below 60 concerning
+- Top 3 priorities should be the highest-leverage changes
+- Protocol should combine bloodwork findings with the behavioral questionnaire data
+- Be honest about uncertainty — if a value is borderline, say so`;
 
   const userMessage = `Here is my bloodwork (attached as image) and my behavioral health questionnaire:
 
-- Sleep: ${questionnaire.sleepHours} hours/night, quality: ${questionnaire.sleepQuality}
-- Stress level: ${questionnaire.stressLevel}/10
-- Exercise: ${questionnaire.exerciseType}, ${questionnaire.exerciseFreq} days/week
-- Alcohol: ${questionnaire.alcohol} units/week
-- Diet: ${questionnaire.diet}
-- Energy pattern: ${questionnaire.energy}
-- Health goal: ${questionnaire.goal}
-- Smoking: ${questionnaire.smoking}
-- Current supplements: ${questionnaire.supplements || 'None'}
-- Additional notes: ${questionnaire.notes || 'None'}
+- Sleep: ${answers.sleepHours} hours/night, quality: ${answers.sleepQuality}
+- Stress level: ${answers.stressLevel}/10
+- Exercise: ${answers.exerciseType}, ${answers.exerciseFreq} days/week
+- Alcohol: ${answers.alcohol} units/week
+- Diet: ${answers.diet}
+- Energy pattern: ${answers.energy}
+- Health goal: ${answers.goal}
+- Smoking: ${answers.smoking}
+- Current supplements: ${answers.supplements || 'None'}
+- Additional notes: ${answers.notes || 'None'}
 
-Please analyze my bloodwork results from the image and combine with this behavioral data to generate my personalized annual health plan.`;
+Analyze my bloodwork from the image and combine with behavioral data to generate my structured health report as JSON.`;
 
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -542,14 +1324,7 @@ Please analyze my bloodwork results from the image and combine with this behavio
       messages: [{
         role: 'user',
         content: [
-          {
-            type: 'image',
-            source: {
-              type: 'base64',
-              media_type: mediaType,
-              data: base64Image
-            }
-          },
+          { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64Image } },
           { type: 'text', text: userMessage }
         ]
       }]
@@ -562,337 +1337,619 @@ Please analyze my bloodwork results from the image and combine with this behavio
   }
 
   const data = await response.json();
-  return data.content[0].text;
+  const text = data.content[0].text;
+  
+  // Try to parse JSON — handle possible markdown code fences
+  let jsonStr = text.trim();
+  if (jsonStr.startsWith('```')) {
+    jsonStr = jsonStr.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+  }
+  return JSON.parse(jsonStr);
 }
 
 
-// ---------- Components ----------
+// ============================================================
+// APP STATE
+// ============================================================
+const state = {
+  screen: 'hero', // hero | upload | questionnaire | loading | results
+  apiKey: sessionStorage.getItem('anthropic_key') || '',
+  settingsOpen: false,
+  file: null,
+  qSection: 0,
+  answers: {
+    sleepHours: 7, sleepQuality: 'Good', stressLevel: 5,
+    exerciseType: 'Mixed', exerciseFreq: 3, alcohol: 0,
+    diet: 'Omnivore', energy: 'Consistent', goal: 'Longevity',
+    smoking: 'Never', supplements: '', notes: ''
+  },
+  report: null,
+  isSample: false,
+  error: '',
+  loadingStep: 0,
+  protocolTab: 'sleep'
+};
 
-function ApiKeyBar({ apiKey, setApiKey }) {
-  return (
-    <div className="api-bar">
-      <label>API Key</label>
-      <input
-        type="password"
-        placeholder="sk-ant-..."
-        value={apiKey}
-        onChange={e => {
-          setApiKey(e.target.value);
+function setState(patch) {
+  Object.assign(state, patch);
+  render();
+}
+
+
+// ============================================================
+// RENDER FUNCTIONS
+// ============================================================
+
+function renderNav() {
+  const hasKey = state.apiKey && state.apiKey.startsWith('sk-');
+  return el('nav', { className: 'nav' },
+    el('div', { className: 'nav-brand' }, 'The Annual Health Check'),
+    el('button', {
+      className: 'nav-settings' + (hasKey ? ' has-key' : ''),
+      onClick: () => setState({ settingsOpen: true }),
+      title: 'Settings'
+    }, '⚙')
+  );
+}
+
+function renderSettings() {
+  if (!state.settingsOpen) return el('div');
+  const hasKey = state.apiKey && state.apiKey.startsWith('sk-');
+  
+  return el('div', null,
+    el('div', { className: 'settings-overlay', onClick: () => setState({ settingsOpen: false }) }),
+    el('div', { className: 'settings-panel' },
+      el('button', { className: 'settings-close', onClick: () => setState({ settingsOpen: false }) }, '×'),
+      el('h3', null, 'Settings'),
+      el('p', null, 'Your API key is used directly in your browser to call Claude. It\'s never sent to our servers and is stored only in your session.'),
+      el('label', null, 'Anthropic API Key'),
+      el('input', {
+        type: 'password',
+        placeholder: 'sk-ant-...',
+        value: state.apiKey,
+        onInput: (e) => {
+          state.apiKey = e.target.value;
           sessionStorage.setItem('anthropic_key', e.target.value);
-        }}
-      />
-    </div>
+        }
+      }),
+      el('div', { className: 'key-status ' + (hasKey ? 'valid' : 'empty') },
+        hasKey ? '✓ Key saved to session' : '○ No key set'
+      )
+    )
   );
 }
 
-function ProgressIndicator({ step }) {
-  return (
-    <div className="progress">
-      {[1, 2, 3].map((s, i) => (
-        <React.Fragment key={s}>
-          {i > 0 && <div className="progress-line" />}
-          <div className={`progress-dot ${s === step ? 'active' : s < step ? 'completed' : ''}`} />
-        </React.Fragment>
-      ))}
-    </div>
+function renderHero() {
+  return el('div', null,
+    el('div', { className: 'hero fade-up' },
+      el('div', { className: 'hero-badge' }, 'AI-Powered Health Analysis'),
+      el('h1', null, 'Your bloodwork, ', el('em', null, 'decoded'), '.'),
+      el('p', null, 'Upload your lab results. Answer a few questions. Get a personalized health protocol backed by your actual data — in minutes.'),
+      el('div', { className: 'hero-buttons' },
+        el('button', { className: 'btn btn-primary', onClick: () => {
+          setState({ screen: 'upload' });
+        }}, '→ Start your analysis'),
+        el('button', { className: 'btn btn-secondary', onClick: () => {
+          setState({ screen: 'results', report: SAMPLE_REPORT, isSample: true });
+        }}, 'See a sample report')
+      )
+    ),
+    el('div', { className: 'preview-section fade-up stagger-2' },
+      el('div', { className: 'preview-heading' }, 'What you\'ll get'),
+      el('div', { className: 'preview-grid' },
+        el('div', { className: 'preview-card' },
+          el('div', { className: 'preview-card-icon', style: { background: 'var(--green-bg)', color: 'var(--green)' } }, '◎'),
+          el('h4', null, 'Health Score'),
+          el('p', null, 'An overall 0–100 score based on your bloodwork and lifestyle factors.')
+        ),
+        el('div', { className: 'preview-card' },
+          el('div', { className: 'preview-card-icon', style: { background: 'var(--accent-light)', color: 'var(--accent)' } }, '◆'),
+          el('h4', null, 'Biomarker Analysis'),
+          el('p', null, 'Every marker color-coded with visual ranges and plain-language interpretations.')
+        ),
+        el('div', { className: 'preview-card' },
+          el('div', { className: 'preview-card-icon', style: { background: 'var(--amber-bg)', color: 'var(--amber)' } }, '▲'),
+          el('h4', null, '90-Day Protocol'),
+          el('p', null, 'Specific sleep, nutrition, movement, and supplement recommendations.')
+        ),
+        el('div', { className: 'preview-card' },
+          el('div', { className: 'preview-card-icon', style: { background: 'var(--red-bg)', color: 'var(--red)' } }, '⚑'),
+          el('h4', null, 'Risk Flags & Retests'),
+          el('p', null, 'Know exactly what to watch and when to retest.')
+        )
+      )
+    )
   );
 }
 
-function UploadStep({ file, setFile, onNext }) {
-  const inputRef = useRef(null);
-  const [dragOver, setDragOver] = useState(false);
+function renderSteps(activeStep) {
+  const steps = ['Upload', 'Profile', 'Results'];
+  return el('div', { className: 'steps-bar' },
+    ...steps.flatMap((label, i) => {
+      const num = i + 1;
+      const isDone = num < activeStep;
+      const isActive = num === activeStep;
+      const items = [
+        el('div', { className: 'step-item' + (isActive ? ' active' : '') },
+          el('div', { className: 'step-number' + (isActive ? ' active' : '') + (isDone ? ' done' : '') },
+            isDone ? '✓' : String(num)
+          ),
+          el('span', { className: 'step-label' }, label)
+        )
+      ];
+      if (i < steps.length - 1) {
+        items.push(el('div', { className: 'step-connector' + (isDone ? ' done' : '') }));
+      }
+      return items;
+    })
+  );
+}
 
-  const handleFile = (f) => {
+function renderUpload() {
+  const fileInput = el('input', {
+    type: 'file',
+    accept: '.pdf,.jpg,.jpeg,.png',
+    style: { display: 'none' },
+    onChange: (e) => {
+      const f = e.target.files[0];
+      if (f) handleFileSelect(f);
+    }
+  });
+
+  function handleFileSelect(f) {
     const valid = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
     if (f && valid.includes(f.type)) {
-      setFile(f);
+      setState({ file: f });
     }
-  };
+  }
 
-  return (
-    <div>
-      <div style={{marginBottom: '8px', fontFamily: 'var(--serif)', fontSize: '14px', letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--accent)'}}>Yuzenya</div><h1>Upload your bloodwork</h1>
-      <p className="subtitle">PDF or image of your most recent lab results.</p>
+  let uploadArea;
+  if (!state.file) {
+    uploadArea = el('div', {
+      className: 'upload-zone',
+      onClick: () => fileInput.click(),
+      onDragover: (e) => { e.preventDefault(); e.currentTarget.classList.add('drag-over'); },
+      onDragleave: (e) => { e.currentTarget.classList.remove('drag-over'); },
+      onDrop: (e) => { e.preventDefault(); e.currentTarget.classList.remove('drag-over'); handleFileSelect(e.dataTransfer.files[0]); }
+    },
+      fileInput,
+      el('div', { className: 'upload-icon' }, '↑'),
+      el('h3', null, 'Drop your lab results here'),
+      el('p', null, 'or ', el('span', { className: 'browse' }, 'browse files'), ' to upload'),
+      el('div', { className: 'upload-formats' },
+        el('span', { className: 'upload-format-tag' }, 'PDF'),
+        el('span', { className: 'upload-format-tag' }, 'JPG'),
+        el('span', { className: 'upload-format-tag' }, 'PNG')
+      )
+    );
+  } else {
+    const isPdf = state.file.type === 'application/pdf';
+    uploadArea = el('div', { className: 'file-card fade-up' },
+      el('div', { className: 'file-card-icon' }, isPdf ? '📄' : '🖼'),
+      el('div', { className: 'file-card-info' },
+        el('div', { className: 'file-card-name' }, state.file.name),
+        el('div', { className: 'file-card-size' }, formatFileSize(state.file.size))
+      ),
+      el('button', { className: 'file-card-remove', onClick: () => setState({ file: null }) }, 'Remove')
+    );
+  }
 
-      {!file ? (
-        <div
-          className={`upload-zone ${dragOver ? 'drag-over' : ''}`}
-          onClick={() => inputRef.current.click()}
-          onDragOver={e => { e.preventDefault(); setDragOver(true); }}
-          onDragLeave={() => setDragOver(false)}
-          onDrop={e => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0]); }}
-        >
-          <p>Drag and drop your file here, or <span className="browse">browse</span></p>
-          <p style={{ fontSize: 13, marginTop: 8, color: '#B0AEA6' }}>.pdf, .jpg, .png</p>
-          <input
-            ref={inputRef}
-            type="file"
-            accept=".pdf,.jpg,.jpeg,.png"
-            onChange={e => handleFile(e.target.files[0])}
-          />
-        </div>
-      ) : (
-        <div className="file-preview">
-          <div className="file-info">
-            <span className="file-name">{file.name}</span>
-            <span className="file-size">{formatFileSize(file.size)}</span>
-          </div>
-          <button onClick={() => setFile(null)}>Remove</button>
-        </div>
-      )}
-
-      <div className="btn-row">
-        <div />
-        <button className="btn btn-primary" disabled={!file} onClick={onNext}>
-          Continue
-        </button>
-      </div>
-    </div>
+  return el('div', { className: 'container' },
+    renderSteps(1),
+    el('div', { className: 'fade-up' },
+      el('div', { className: 'section-header' },
+        el('h2', null, 'Upload your bloodwork'),
+        el('p', null, 'PDF or image of your most recent lab results. We\'ll analyze up to 3 pages.')
+      ),
+      uploadArea,
+      el('div', { className: 'btn-row' },
+        el('button', { className: 'btn btn-ghost', onClick: () => setState({ screen: 'hero' }) }, '← Back'),
+        el('button', {
+          className: 'btn btn-primary',
+          disabled: !state.file ? 'disabled' : undefined,
+          onClick: () => { if (state.file) setState({ screen: 'questionnaire', qSection: 0 }); }
+        }, 'Continue →')
+      )
+    )
   );
 }
 
-function OptionSelect({ options, value, onChange }) {
-  return (
-    <div className="option-group">
-      {options.map(opt => (
-        <div
-          key={opt}
-          className={`option-pill ${value === opt ? 'selected' : ''}`}
-          onClick={() => onChange(opt)}
-        >
-          {opt}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function QuestionnaireStep({ answers, setAnswers, onNext, onBack }) {
-  const update = (key, val) => setAnswers(prev => ({ ...prev, [key]: val }));
-
-  return (
-    <div>
-      <h1>Your health profile</h1>
-      <p className="subtitle">Quick questions to personalize your plan.</p>
-
-      <div className="form-group">
-        <label>Sleep hours per night</label>
-        <div className="slider-wrap">
-          <input type="range" min="4" max="10" step="0.5" value={answers.sleepHours}
-            onChange={e => update('sleepHours', e.target.value)} />
-          <span className="slider-value">{answers.sleepHours}</span>
-        </div>
-      </div>
-
-      <div className="form-group">
-        <label>Sleep quality</label>
-        <OptionSelect options={['Poor', 'Fair', 'Good', 'Excellent']}
-          value={answers.sleepQuality} onChange={v => update('sleepQuality', v)} />
-      </div>
-
-      <div className="form-group">
-        <label>Stress level <span className="label-detail">(1 = zen, 10 = overwhelmed)</span></label>
-        <div className="slider-wrap">
-          <input type="range" min="1" max="10" step="1" value={answers.stressLevel}
-            onChange={e => update('stressLevel', e.target.value)} />
-          <span className="slider-value">{answers.stressLevel}</span>
-        </div>
-      </div>
-
-      <div className="form-group">
-        <label>Exercise type</label>
-        <OptionSelect options={['None', 'Walking', 'Cardio', 'Strength', 'Mixed']}
-          value={answers.exerciseType} onChange={v => update('exerciseType', v)} />
-      </div>
-
-      <div className="form-group">
-        <label>Exercise frequency <span className="label-detail">(days/week)</span></label>
-        <div className="slider-wrap">
-          <input type="range" min="0" max="7" step="1" value={answers.exerciseFreq}
-            onChange={e => update('exerciseFreq', e.target.value)} />
-          <span className="slider-value">{answers.exerciseFreq}</span>
-        </div>
-      </div>
-
-      <div className="form-group">
-        <label>Alcohol <span className="label-detail">(units per week)</span></label>
-        <input type="number" min="0" max="50" placeholder="0"
-          value={answers.alcohol} onChange={e => update('alcohol', e.target.value)} />
-      </div>
-
-      <div className="form-group">
-        <label>Diet pattern</label>
-        <OptionSelect options={['Omnivore', 'Plant-based', 'Keto', 'Mediterranean', 'Other']}
-          value={answers.diet} onChange={v => update('diet', v)} />
-      </div>
-
-      <div className="form-group">
-        <label>Energy pattern</label>
-        <OptionSelect options={['Morning person', 'Evening person', 'Consistent', 'Always tired']}
-          value={answers.energy} onChange={v => update('energy', v)} />
-      </div>
-
-      <div className="form-group">
-        <label>Main health goal</label>
-        <OptionSelect options={['Longevity', 'Performance', 'Weight management', 'Mental clarity', 'Hormonal balance']}
-          value={answers.goal} onChange={v => update('goal', v)} />
-      </div>
-
-      <div className="form-group">
-        <label>Smoking</label>
-        <OptionSelect options={['Never', 'Former', 'Current']}
-          value={answers.smoking} onChange={v => update('smoking', v)} />
-      </div>
-
-      <div className="form-group">
-        <label>Supplements currently taking</label>
-        <input type="text" placeholder="e.g. Vitamin D, Magnesium, Fish oil…"
-          value={answers.supplements} onChange={e => update('supplements', e.target.value)} />
-      </div>
-
-      <div className="form-group">
-        <label>Anything else your doctor should know?</label>
-        <textarea placeholder="Medications, conditions, recent changes…"
-          value={answers.notes} onChange={e => update('notes', e.target.value)} />
-      </div>
-
-      <div className="btn-row">
-        <button className="btn btn-secondary" onClick={onBack}>← Back</button>
-        <button className="btn btn-primary" onClick={onNext}>Generate my plan</button>
-      </div>
-    </div>
-  );
-}
-
-function LoadingState() {
-  return (
-    <div className="loading-wrap">
-      <p>Analyzing your data…</p>
-      <div className="loading-dots">
-        <span /><span /><span />
-      </div>
-    </div>
-  );
-}
-
-function PlanStep({ plan, rawMarkdown, onBack }) {
-  const planRef = useRef(null);
-
-  const handlePrint = () => window.print();
-  const handleCopy = () => {
-    navigator.clipboard.writeText(rawMarkdown).then(() => {
-      alert('Plan copied to clipboard as markdown.');
-    });
-  };
-
-  const html = colorCodePlan(marked.parse(rawMarkdown));
-
-  return (
-    <div>
-      <h1>Your Annual Health Check</h1>
-      <p className="subtitle">Generated from your bloodwork and health profile.</p>
-
-      <div className="plan-output" ref={planRef} dangerouslySetInnerHTML={{ __html: html }} />
-
-      <div className="action-bar">
-        <button className="btn btn-primary" onClick={handlePrint}>🖨 Print</button>
-        <button className="btn btn-primary" onClick={handleCopy}>📋 Copy as Markdown</button>
-        <button className="btn btn-secondary" onClick={onBack}>← Start over</button>
-      </div>
-    </div>
-  );
-}
-
-
-// ---------- App ----------
-
-function App() {
-  const [apiKey, setApiKey] = useState(() => sessionStorage.getItem('anthropic_key') || '');
-  const [step, setStep] = useState(1);
-  const [file, setFile] = useState(null);
-  const [answers, setAnswers] = useState({
-    sleepHours: 7,
-    sleepQuality: 'Good',
-    stressLevel: 5,
-    exerciseType: 'Mixed',
-    exerciseFreq: 3,
-    alcohol: 0,
-    diet: 'Omnivore',
-    energy: 'Consistent',
-    goal: 'Longevity',
-    smoking: 'Never',
-    supplements: '',
-    notes: ''
-  });
-  const [loading, setLoading] = useState(false);
-  const [plan, setPlan] = useState('');
-  const [error, setError] = useState('');
-
-  const generatePlan = async () => {
-    if (!apiKey) {
-      setError('Please enter your Anthropic API key at the top of the page.');
-      return;
+function renderQuestionnaire() {
+  const sections = [
+    {
+      icon: '🌙', iconBg: 'var(--accent-light)', iconColor: 'var(--accent)',
+      title: 'Sleep & Energy',
+      fields: [
+        { key: 'sleepHours', label: 'Hours of sleep per night', type: 'slider', min: 4, max: 10, step: 0.5 },
+        { key: 'sleepQuality', label: 'Sleep quality', type: 'pills', options: ['Poor', 'Fair', 'Good', 'Excellent'] },
+        { key: 'energy', label: 'Energy pattern', type: 'pills', options: ['Morning person', 'Evening person', 'Consistent', 'Always tired'] }
+      ]
+    },
+    {
+      icon: '🏃', iconBg: 'var(--green-bg)', iconColor: 'var(--green)',
+      title: 'Activity & Diet',
+      fields: [
+        { key: 'exerciseType', label: 'Primary exercise type', type: 'pills', options: ['None', 'Walking', 'Cardio', 'Strength', 'Mixed'] },
+        { key: 'exerciseFreq', label: 'Exercise days per week', type: 'slider', min: 0, max: 7, step: 1 },
+        { key: 'diet', label: 'Diet pattern', type: 'pills', options: ['Omnivore', 'Plant-based', 'Keto', 'Mediterranean', 'Other'] },
+        { key: 'alcohol', label: 'Alcohol (units per week)', type: 'number', placeholder: '0' }
+      ]
+    },
+    {
+      icon: '🧠', iconBg: 'var(--amber-bg)', iconColor: 'var(--amber)',
+      title: 'Lifestyle',
+      fields: [
+        { key: 'stressLevel', label: 'Stress level', hint: '1 = zen, 10 = overwhelmed', type: 'slider', min: 1, max: 10, step: 1 },
+        { key: 'smoking', label: 'Smoking', type: 'pills', options: ['Never', 'Former', 'Current'] },
+        { key: 'supplements', label: 'Supplements currently taking', type: 'text', placeholder: 'e.g. Vitamin D, Magnesium, Fish oil…' }
+      ]
+    },
+    {
+      icon: '🎯', iconBg: 'var(--red-bg)', iconColor: 'var(--red)',
+      title: 'Goals & Notes',
+      fields: [
+        { key: 'goal', label: 'Primary health goal', type: 'pills', options: ['Longevity', 'Performance', 'Weight management', 'Mental clarity', 'Hormonal balance'] },
+        { key: 'notes', label: 'Anything else relevant?', type: 'textarea', placeholder: 'Medications, conditions, recent changes…' }
+      ]
     }
-    setError('');
-    setLoading(true);
-    setStep(3);
+  ];
 
-    try {
-      let base64;
-      let mediaType = getMediaType(file);
+  const sec = sections[state.qSection];
 
-      if (file.type === 'application/pdf') {
-        base64 = await pdfToBase64Image(file);
-      } else {
-        base64 = await fileToBase64(file);
-      }
+  function renderField(field) {
+    const val = state.answers[field.key];
+    const labelEl = el('label', null,
+      field.label,
+      field.hint ? el('span', { className: 'label-hint' }, ' — ' + field.hint) : null
+    );
 
-      const result = await callClaude(apiKey, base64, mediaType, answers);
-      setPlan(result);
-    } catch (err) {
-      setError(err.message || 'Something went wrong. Please try again.');
-      setStep(2);
-    } finally {
-      setLoading(false);
+    if (field.type === 'slider') {
+      return el('div', { className: 'form-group' },
+        labelEl,
+        el('div', { className: 'slider-wrap' },
+          el('input', {
+            type: 'range', min: String(field.min), max: String(field.max), step: String(field.step),
+            value: String(val),
+            onInput: (e) => { state.answers[field.key] = parseFloat(e.target.value); render(); }
+          }),
+          el('span', { className: 'slider-value' }, String(val))
+        )
+      );
     }
-  };
+    if (field.type === 'pills') {
+      return el('div', { className: 'form-group' },
+        labelEl,
+        el('div', { className: 'option-group' },
+          ...field.options.map(opt =>
+            el('div', {
+              className: 'option-pill' + (val === opt ? ' selected' : ''),
+              onClick: () => { state.answers[field.key] = opt; render(); }
+            }, opt)
+          )
+        )
+      );
+    }
+    if (field.type === 'number') {
+      return el('div', { className: 'form-group' },
+        labelEl,
+        el('input', {
+          type: 'number', className: 'text-input', min: '0', placeholder: field.placeholder,
+          value: String(val),
+          onInput: (e) => { state.answers[field.key] = e.target.value; render(); }
+        })
+      );
+    }
+    if (field.type === 'text') {
+      return el('div', { className: 'form-group' },
+        labelEl,
+        el('input', {
+          type: 'text', className: 'text-input', placeholder: field.placeholder,
+          value: val,
+          onInput: (e) => { state.answers[field.key] = e.target.value; render(); }
+        })
+      );
+    }
+    if (field.type === 'textarea') {
+      return el('div', { className: 'form-group' },
+        labelEl,
+        el('textarea', {
+          className: 'textarea-input', placeholder: field.placeholder,
+          value: val,
+          onInput: (e) => { state.answers[field.key] = e.target.value; render(); }
+        })
+      );
+    }
+    return el('div');
+  }
 
-  return (
-    <div>
-      <ApiKeyBar apiKey={apiKey} setApiKey={setApiKey} />
-      <div className="container">
-        <ProgressIndicator step={step} />
+  const isLast = state.qSection === sections.length - 1;
 
-        {error && <div className="error-msg">{error}</div>}
-
-        {step === 1 && (
-          <UploadStep file={file} setFile={setFile} onNext={() => setStep(2)} />
-        )}
-
-        {step === 2 && (
-          <QuestionnaireStep
-            answers={answers}
-            setAnswers={setAnswers}
-            onNext={generatePlan}
-            onBack={() => setStep(1)}
-          />
-        )}
-
-        {step === 3 && loading && <LoadingState />}
-
-        {step === 3 && !loading && plan && (
-          <PlanStep
-            plan={plan}
-            rawMarkdown={plan}
-            onBack={() => { setPlan(''); setStep(1); }}
-          />
-        )}
-      </div>
-    </div>
+  return el('div', { className: 'container' },
+    renderSteps(2),
+    el('div', { className: 'q-progress' },
+      ...sections.map((_, i) =>
+        el('div', { className: 'q-progress-seg' + (i <= state.qSection ? ' filled' : '') })
+      )
+    ),
+    el('div', { className: 'q-card fade-up', key: state.qSection },
+      el('div', { className: 'q-card-header' },
+        el('div', { className: 'q-card-icon', style: { background: sec.iconBg, color: sec.iconColor } }, sec.icon),
+        el('div', { className: 'q-card-title' }, sec.title)
+      ),
+      ...sec.fields.map(renderField)
+    ),
+    el('div', { className: 'btn-row' },
+      el('button', { className: 'btn btn-ghost', onClick: () => {
+        if (state.qSection === 0) setState({ screen: 'upload' });
+        else setState({ qSection: state.qSection - 1 });
+      }}, '← Back'),
+      el('button', { className: 'btn btn-primary', onClick: () => {
+        if (!isLast) {
+          setState({ qSection: state.qSection + 1 });
+        } else {
+          startAnalysis();
+        }
+      }}, isLast ? 'Generate my report →' : 'Continue →')
+    )
   );
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+async function startAnalysis() {
+  if (!state.apiKey || !state.apiKey.startsWith('sk-')) {
+    setState({ error: 'Please add your Anthropic API key first (click the ⚙ icon in the top right).', settingsOpen: true });
+    return;
+  }
+  setState({ screen: 'loading', error: '', loadingStep: 0 });
+
+  // Animate loading steps
+  setTimeout(() => { if (state.screen === 'loading') setState({ loadingStep: 1 }); }, 2000);
+  setTimeout(() => { if (state.screen === 'loading') setState({ loadingStep: 2 }); }, 5000);
+
+  try {
+    let base64;
+    const mediaType = getMediaType(state.file);
+    if (state.file.type === 'application/pdf') {
+      base64 = await pdfToBase64Image(state.file);
+    } else {
+      base64 = await fileToBase64(state.file);
+    }
+    const report = await callClaude(state.apiKey, base64, mediaType, state.answers);
+    setState({ screen: 'results', report, isSample: false, error: '' });
+  } catch (err) {
+    setState({ screen: 'questionnaire', qSection: 3, error: err.message || 'Something went wrong. Please try again.' });
+  }
+}
+
+function renderLoading() {
+  const steps = [
+    'Reading your lab results…',
+    'Cross-referencing biomarkers…',
+    'Building your protocol…'
+  ];
+  return el('div', { className: 'container' },
+    renderSteps(3),
+    el('div', { className: 'loading-wrap fade-in' },
+      el('div', { className: 'loading-icon' },
+        el('div', { className: 'loading-ring' })
+      ),
+      el('ul', { className: 'loading-steps' },
+        ...steps.map((text, i) => {
+          let cls = 'loading-step';
+          if (i < state.loadingStep) cls += ' done';
+          else if (i === state.loadingStep) cls += ' active';
+          return el('li', { className: cls },
+            el('span', { className: 'loading-step-dot' }),
+            text
+          );
+        })
+      )
+    )
+  );
+}
+
+function renderResults() {
+  const r = state.report;
+  if (!r) return el('div');
+
+  const color = scoreColor(r.healthScore);
+  const circumference = 2 * Math.PI * 45; // r=45
+  const offset = circumference - (r.healthScore / 100) * circumference;
+
+  // Score ring SVG
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(svgNS, 'svg');
+  svg.setAttribute('width', '140');
+  svg.setAttribute('height', '140');
+  svg.setAttribute('viewBox', '0 0 100 100');
+  const bgCircle = document.createElementNS(svgNS, 'circle');
+  bgCircle.setAttribute('cx', '50'); bgCircle.setAttribute('cy', '50'); bgCircle.setAttribute('r', '45');
+  bgCircle.setAttribute('class', 'score-ring-bg');
+  const fillCircle = document.createElementNS(svgNS, 'circle');
+  fillCircle.setAttribute('cx', '50'); fillCircle.setAttribute('cy', '50'); fillCircle.setAttribute('r', '45');
+  fillCircle.setAttribute('class', 'score-ring-fill');
+  fillCircle.setAttribute('stroke', color);
+  fillCircle.setAttribute('stroke-dasharray', String(circumference));
+  fillCircle.setAttribute('stroke-dashoffset', String(offset));
+  fillCircle.style.animation = 'scoreReveal 1.5s ease-out forwards';
+  fillCircle.style.strokeDashoffset = String(offset);
+  svg.appendChild(bgCircle);
+  svg.appendChild(fillCircle);
+
+  const scoreRing = el('div', { className: 'score-ring' });
+  scoreRing.appendChild(svg);
+  scoreRing.appendChild(
+    el('div', { className: 'score-number' },
+      el('strong', { style: { color } }, String(r.healthScore)),
+      el('span', null, 'of 100')
+    )
+  );
+
+  // Biomarker cards
+  function renderBioCard(bio, i) {
+    const statusCls = statusClass(bio.status);
+    const barColor = bio.status === 'optimal' ? 'var(--green)' : bio.status === 'borderline' ? 'var(--amber)' : 'var(--red)';
+    // Simple bar: show relative position (hacky but visual)
+    const barWidth = bio.status === 'optimal' ? '75%' : bio.status === 'borderline' ? '50%' : '25%';
+    
+    return el('div', { className: 'bio-card fade-up stagger-' + Math.min(i % 5 + 1, 5) },
+      el('div', { className: 'bio-card-top' },
+        el('div', null,
+          el('span', { className: 'status-badge ' + statusCls }, bio.status),
+          el('div', { className: 'bio-name' }, bio.name)
+        ),
+        el('div', { className: 'bio-value', style: { color: barColor } },
+          String(bio.value),
+          el('span', { className: 'bio-unit' }, bio.unit)
+        )
+      ),
+      el('div', { className: 'bio-bar-wrap' },
+        el('div', { className: 'bio-bar-fill', style: { width: barWidth, background: barColor } })
+      ),
+      el('div', { className: 'bio-interp' }, bio.interpretation),
+      el('div', { className: 'bio-range' }, 'Optimal range: ' + bio.optimalRange)
+    );
+  }
+
+  // Protocol tabs
+  const tabKeys = ['sleep', 'nutrition', 'movement', 'supplements'];
+  const tabLabels = { sleep: '🌙 Sleep', nutrition: '🥗 Nutrition', movement: '🏃 Movement', supplements: '💊 Supplements' };
+  const activeTab = state.protocolTab || 'sleep';
+  const protocolItems = r.protocol[activeTab] || [];
+
+  // Build results
+  return el('div', { className: 'container' },
+    // Sample badge
+    state.isSample ? el('div', { style: { textAlign: 'center' } },
+      el('div', { className: 'sample-badge fade-in' }, '⬡ Sample Report — This is example data')
+    ) : null,
+
+    // Header
+    el('div', { className: 'results-header fade-up' },
+      el('h1', null, 'Your Health Report'),
+      el('p', null, state.isSample ? 'Here\'s what your personalized report looks like.' : 'Based on your bloodwork and health profile.')
+    ),
+
+    // Health Score
+    el('div', { className: 'score-card fade-up stagger-1' },
+      scoreRing,
+      el('div', { className: 'score-label' }, r.healthScore >= 80 ? 'Looking Good' : r.healthScore >= 60 ? 'Room to Improve' : 'Needs Attention'),
+      el('div', { className: 'score-summary' }, r.summary)
+    ),
+
+    // Biomarkers
+    el('div', { className: 'bio-section-title fade-up stagger-2' }, '◎ Biomarker Analysis'),
+    ...r.biomarkers.map((bio, i) => renderBioCard(bio, i)),
+
+    // Top 3 Priorities
+    el('div', { className: 'bio-section-title fade-up' }, '▲ Top 3 Priorities'),
+    ...r.priorities.map((p, i) =>
+      el('div', { className: 'priority-card fade-up stagger-' + (i + 1) },
+        el('div', { className: 'priority-num' }, String(i + 1)),
+        el('div', { className: 'priority-content' },
+          el('h4', null, p.title),
+          el('p', null, p.description),
+          el('span', { className: 'priority-impact ' + impactClass(p.impact) }, p.impact + ' impact')
+        )
+      )
+    ),
+
+    // 90-Day Protocol
+    el('div', { className: 'bio-section-title fade-up' }, '◆ 90-Day Protocol'),
+    el('div', { className: 'protocol-tabs' },
+      ...tabKeys.map(key =>
+        el('button', {
+          className: 'protocol-tab' + (activeTab === key ? ' active' : ''),
+          onClick: () => setState({ protocolTab: key })
+        }, tabLabels[key])
+      )
+    ),
+    el('ul', { className: 'protocol-list fade-in' },
+      ...protocolItems.map(item =>
+        el('li', { className: 'protocol-item' },
+          el('span', { className: 'protocol-bullet' }),
+          el('span', null, item)
+        )
+      )
+    ),
+
+    // Retest Schedule
+    r.retestSchedule && r.retestSchedule.length > 0 ? el('div', null,
+      el('div', { className: 'bio-section-title fade-up' }, '⟳ Retest Schedule'),
+      ...r.retestSchedule.map(rt =>
+        el('div', { className: 'retest-card' },
+          el('div', { className: 'retest-when' }, rt.when),
+          el('div', { className: 'retest-info' },
+            el('h4', null, rt.biomarker),
+            el('p', null, rt.reason)
+          )
+        )
+      )
+    ) : null,
+
+    // Risk Flags
+    r.riskFlags && r.riskFlags.length > 0 ? el('div', null,
+      el('div', { className: 'bio-section-title fade-up' }, '⚑ Risk Flags'),
+      ...r.riskFlags.map(flag =>
+        el('div', { className: 'risk-card fade-up' },
+          el('div', { className: 'risk-icon' }, '⚠'),
+          el('div', { className: 'risk-content' },
+            el('p', null, flag)
+          )
+        )
+      )
+    ) : null,
+
+    // Disclaimer
+    el('div', { className: 'disclaimer fade-up' }, r.disclaimer),
+
+    // Actions
+    el('div', { className: 'action-bar fade-up' },
+      el('button', { className: 'btn btn-primary btn-sm', onClick: () => window.print() }, '🖨 Print Report'),
+      el('button', { className: 'btn btn-secondary btn-sm', onClick: () => {
+        const text = JSON.stringify(r, null, 2);
+        navigator.clipboard.writeText(text).then(() => {
+          alert('Report data copied to clipboard.');
+        });
+      }}, '📋 Copy Data'),
+      el('button', { className: 'btn btn-ghost btn-sm', onClick: () => {
+        setState({ screen: 'hero', report: null, isSample: false, file: null, error: '', protocolTab: 'sleep' });
+      }}, '← Start Over')
+    ),
+
+    // Bottom spacing
+    el('div', { style: { height: '80px' } })
+  );
+}
+
+
+// ============================================================
+// MAIN RENDER
+// ============================================================
+function render() {
+  const app = document.getElementById('app');
+  app.innerHTML = '';
+
+  app.appendChild(renderNav());
+  app.appendChild(renderSettings());
+
+  if (state.error && state.screen !== 'results') {
+    const errContainer = el('div', { className: 'container' },
+      el('div', { className: 'error-msg fade-in' }, state.error)
+    );
+    app.appendChild(errContainer);
+  }
+
+  switch (state.screen) {
+    case 'hero': app.appendChild(renderHero()); break;
+    case 'upload': app.appendChild(renderUpload()); break;
+    case 'questionnaire': app.appendChild(renderQuestionnaire()); break;
+    case 'loading': app.appendChild(renderLoading()); break;
+    case 'results': app.appendChild(renderResults()); break;
+  }
+}
+
+// Initial render
+render();
 </script>
 </body>
 </html>
